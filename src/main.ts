@@ -1,4 +1,4 @@
-import { Actor, CollisionType, Color, Engine, Font, Text, vec } from "excalibur"
+import { Actor, CollisionType, Color, Engine, Font, FontUnit, Label, Loader, Sound, Sound, Text, vec } from "excalibur"
 
 // 1 - Criar uma instancia de Engine que representa o jogo
 const game = new Engine({
@@ -8,7 +8,7 @@ const game = new Engine({
 
 // 2 - criar barra do player
 const barra = new Actor({
-	x: 150,
+	x: 180,
 	y: game.drawHeight - 40,
 	width: 200,
 	height: 20,
@@ -40,7 +40,7 @@ const bolinha = new Actor({
 bolinha.body.collisionType = CollisionType.Passive
 
 // 5 - criar movimento da bolinha
-const velocidadeBolinha = vec(1000, 1000)
+const velocidadeBolinha = vec(800, 800)
 
 //define a velocidade da bolinha
 setTimeout(() => {
@@ -79,13 +79,14 @@ const xoffset = 65
 const yoffset = 20
 
 const colunas = 5
-const linhas = 3
+const linhas = 5
 
-const corBloco = [Color.Red, Color.Orange, Color.Yellow]
+const corBloco = [Color.Red, Color.Orange, Color.Yellow, Color.Green, Color.Blue, Color.Violet, Color.Rose, Color.Black, Color.White]
 
 const alturaBloco = 30
 
 const larguraBloco = (game.drawWidth / colunas) - padding - (padding / colunas)
+
 //const largurabloco = 136
 
 const listaBlocos: Actor[] = []
@@ -117,29 +118,59 @@ listaBlocos.forEach(bloco => {
 	game.add(bloco)
 })
 
+//pontos
 let pontos = 0
 
-const textoPontos = new Text({
-	text: "hello world",
-	font: new Font({ size: 20 })
+//const textoPontos = new Text({
+//	text: "hello world",
+//	font: new Font({ size: 20 })
+//})
+
+//const objetoTexto = new Actor({
+//	x: game.drawWidth -80,
+//	y: game.drawHeight -15
+//})
+
+//objetoTexto.graphics.use(textoPontos)
+
+//game.add(objetoTexto)
+
+const textoPontos = new Label({
+	text: pontos.toString(),
+	font: new Font({
+		size: 40,
+		color: Color.White,
+		strokeColor: Color.Black,
+		unit: FontUnit.Px
+	}),
+	pos: vec(600, 500)
 })
 
-const objetoTexto = new Actor({
-	x: game.drawWidth -80,
-	y: game.drawHeight -15
-})
-
-objetoTexto.graphics.use(textoPontos)
-
-game.add(objetoTexto)
+game.add(textoPontos)
 
 
 let colidindo: boolean = false
 
+const sound = new Sound('pop-94319.mp3')
+
 bolinha.on("collisionstart", (event) => {
 	if (listaBlocos.includes(event.other) ) {
+
 		//destruir bloco
 		event.other.kill()
+
+		//adiciona pontos
+		pontos++
+
+		//adiciona valor do placar
+		textoPontos.text = pontos.toString()
+
+		console.log(pontos)
+
+		if (pontos == colunas * linhas) {
+			alert("GANHOU!!")
+			window.location.reload()
+		}
 	}
 		//rebater a bolinha invertendo as direcoes
 		let interseccao = event.contact.mtv.normalize()
@@ -157,6 +188,7 @@ bolinha.on("collisionstart", (event) => {
 			} else {
 				bolinha.vel.y = bolinha.vel.y * -1
 			}
+			
 		}
 
 	})
