@@ -1,4 +1,4 @@
-import { Actor, CollisionType, Color, Engine, Font, FontUnit, Label, Loader, Sound, Sound, Text, vec } from "excalibur"
+import { Actor, CollisionType, Color, Engine, Font, FontUnit, Label, Loader, Sound, vec } from "excalibur"
 
 // 1 - Criar uma instancia de Engine que representa o jogo
 const game = new Engine({
@@ -38,6 +38,20 @@ const bolinha = new Actor({
 })
 
 bolinha.body.collisionType = CollisionType.Passive
+
+let coresBolinha = [
+	Color.Black,
+	Color.Blue,
+	Color.Green,
+	Color.Orange,
+	Color.Red,
+	Color.White,
+	Color.Yellow,
+	Color.Magenta,
+	Color.Gray,
+]
+
+let numerocores = coresBolinha.length
 
 // 5 - criar movimento da bolinha
 const velocidadeBolinha = vec(800, 800)
@@ -148,10 +162,16 @@ const textoPontos = new Label({
 
 game.add(textoPontos)
 
+//adicionar som ao colidir com os blocos
+const sound = new Sound('./som/punch-41105.mp3');
+const gameOverSound = new Sound('./som/stop-13692.mp3');
+const pop = new Sound('./som/pop-94319.mp3');
+const voceVenceu = new Sound('./som/dj-airhorn-sound-39405.mp3');
+
+const loader = new Loader([sound, gameOverSound, pop, voceVenceu])
+
 
 let colidindo: boolean = false
-
-const sound = new Sound('pop-94319.mp3')
 
 bolinha.on("collisionstart", (event) => {
 	if (listaBlocos.includes(event.other) ) {
@@ -159,8 +179,15 @@ bolinha.on("collisionstart", (event) => {
 		//destruir bloco
 		event.other.kill()
 
+		//executar som
+		sound.play(1)
+
 		//adiciona pontos
 		pontos++
+
+		//mudar cor da bolinha
+		//bolinha.color = coresBolinha[ Math.trunc(Math.random() * numerocores) ]
+		bolinha.color = event.other.color
 
 		//adiciona valor do placar
 		textoPontos.text = pontos.toString()
@@ -168,6 +195,7 @@ bolinha.on("collisionstart", (event) => {
 		console.log(pontos)
 
 		if (pontos == colunas * linhas) {
+			voceVenceu.play(1)
 			alert("GANHOU!!")
 			window.location.reload()
 		}
@@ -178,7 +206,9 @@ bolinha.on("collisionstart", (event) => {
 //! = false
 
 		if (!colidindo) {
+			pop.play(0.2)
 			colidindo = true
+			
 
 			//intersecao x e y
 
@@ -198,9 +228,15 @@ bolinha.on("collisionend", () => {
 })
 
 bolinha.on("exitviewport", () => {
+	//som de game over
+	gameOverSound.play(1)
+.then(() => {
 	alert("MORREU!")
 	window.location.reload()
 })
 
+	
+})
+
 //inicia o game
-game.start()
+await game.start(loader)
